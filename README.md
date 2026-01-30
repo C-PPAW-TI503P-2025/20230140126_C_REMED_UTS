@@ -1,7 +1,3 @@
-```powershell
-cd backend
-npm install express sequelize mysql2 body-parser cors dotenv
-
 # 📚 Library System with Geolocation (Remedial UCP 1)
 
 > **Pengembangan Aplikasi Web**
@@ -76,104 +72,15 @@ root/
 │   └── index.html      # Tampilan Web (UI)
 └── README.md           # Dokumentasi Proyek
 
-## ⚙️ Instalasi & Konfigurasi
-
-Ikuti langkah ini untuk menjalankan proyek di komputer lokal:
-
-### 1. Persiapan Database
-
-Pastikan XAMPP/MySQL berjalan, lalu buat database baru:
-
-```sql
-CREATE DATABASE db_remedial_ucp1;
-
-```
-
-### 2. Instalasi Dependensi
-
-Masuk ke folder backend dan install semua library yang dibutuhkan:
-
-```bash
-cd backend
+⚙️ Instalasi & KonfigurasiIkuti langkah ini untuk menjalankan proyek di komputer lokal:1. Persiapan DatabasePastikan XAMPP/MySQL berjalan, lalu buat database baru:SQLCREATE DATABASE db_remedial_ucp1;
+2. Instalasi DependensiMasuk ke folder backend dan install semua library yang dibutuhkan:Bashcd backend
 npm install express sequelize mysql2 body-parser cors dotenv
-
-```
-
-### 3. Konfigurasi Environment
-
-Buat file bernama `.env` di dalam folder `backend`, lalu isi:
-
-```ini
-DB_NAME=db_remedial_ucp1
+3. Konfigurasi EnvironmentBuat file bernama .env di dalam folder backend, lalu isi:Ini, TOMLDB_NAME=db_remedial_ucp1
 DB_USER=root
 DB_PASSWORD=      <-- Isi password database Anda (kosongkan jika default XAMPP)
 DB_HOST=localhost
 DB_DIALECT=mysql
 DB_PORT=3306      <-- Sesuaikan port (bisa 3306 atau 3309)
 PORT=3000
-
-```
-
-### 4. Menjalankan Server
-
-```bash
-node index.js
-
-```
-
-*Akses aplikasi di browser: `http://localhost:3000*`
-
----
-
-## 📡 Dokumentasi API (Postman)
-
-### 📘 Manajemen Buku (Admin)
-
-| Method | Endpoint | Deskripsi |
-| --- | --- | --- |
-| `GET` | `/api/books` | Melihat daftar buku |
-| `POST` | `/api/books` | Menambah buku (Admin) |
-
-**Screenshots:**
-
-### 📕 Peminjaman (User)
-
-| Method | Endpoint | Body JSON |
-| --- | --- | --- |
-| `POST` | `/api/borrow` | `{ "bookId": 1, "latitude": -7.7, "longitude": 110.3 }` |
-
-**Screenshots:**
-
-### 📒 History & Tracking (Admin)
-
-| Method | Endpoint | Deskripsi |
-| --- | --- | --- |
-| `GET` | `/api/borrow` | Lihat semua history |
-| `GET` | `/api/borrow/user/:id` | **Filter History per User ID** |
-
-**Screenshots:**
-
----
-
-## 📸 Screenshots Aplikasi
-
-**1. Mode Admin (Monitoring History & Maps)**
-*Admin dapat melihat tabel peminjaman lengkap dengan tombol "Cek Maps".*
-*(Sesuaikan nama file gambar Anda)*
-
-**2. Mode User (Peminjaman)**
-*User meminjam buku dan memberikan izin lokasi browser.*
-
----
-
-## 👨‍💻 Kontributor
-
-**Remedial UCP 1 - Pengembangan Aplikasi Web**
-
-| Nama | NIM | Kelas |
-| --- | --- | --- |
-| **M. Alfiansyah Azad** | **20230140126** | **C** |
-
-```
-
-```
+4. Menjalankan ServerBashnode index.js
+Akses aplikasi di browser: http://localhost:3000📡 Dokumentasi API (Postman)📘 Manajemen Buku (Admin)MethodEndpointDeskripsiGET/api/booksMelihat daftar bukuPOST/api/booksMenambah buku (Admin)Screenshots:📕 Peminjaman (User)MethodEndpointBody JSONPOST/api/borrow{ "bookId": 1, "latitude": -7.7, "longitude": 110.3 }Screenshots:📒 History & Tracking (Admin)MethodEndpointDeskripsiGET/api/borrowLihat semua historyGET/api/borrow/user/:idFilter History per User IDScreenshots:📸 Screenshots Aplikasi1. Mode Admin (Monitoring History & Maps)Admin dapat melihat tabel peminjaman lengkap dengan tombol "Cek Maps".2. Mode User (Peminjaman)User meminjam buku dan memberikan izin lokasi browser.👨‍💻 KontributorRemedial UCP 1 - Pengembangan Aplikasi WebNamaNIMKelas[ISI NAMA LENGKAP][ISI NIM][ISI KELAS]
