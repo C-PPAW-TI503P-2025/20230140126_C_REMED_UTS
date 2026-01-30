@@ -2,19 +2,6 @@
 cd backend
 npm install express sequelize mysql2 body-parser cors dotenv
 
-```
-
-*(Setelah ini, baru kamu push ke GitHub).*
-
----
-
-### LANGKAH 2: Isi File `README.md` (Copy Semua)
-
-Ini adalah isi file `README.md` yang sudah saya rapikan jadi satu. Di dalamnya sudah tertulis instruksi instalasi lengkap untuk Dosen/Teman yang mau coba kodinganmu.
-
-**File:** `README.md` (Simpan di folder paling luar)
-
-```markdown
 # 📚 Library System with Geolocation (Remedial UCP 1)
 
 > **Pengembangan Aplikasi Web**
@@ -88,10 +75,6 @@ root/
 ├── frontend/
 │   └── index.html      # Tampilan Web (UI)
 └── README.md           # Dokumentasi Proyek
-
-```
-
----
 
 ## ⚙️ Instalasi & Konfigurasi
 
