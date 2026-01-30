@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/borrowController');
-const { isUser } = require('../middleware/authMiddleware');
+const { isUser, isAdmin } = require('../middleware/authMiddleware');
 
-// User Route (Protected)
 router.post('/', isUser, controller.borrowBook);
+router.get('/', isAdmin, controller.getHistory);
+router.get('/user/:id', isAdmin, controller.getLogsByUserId);
 
 module.exports = router;

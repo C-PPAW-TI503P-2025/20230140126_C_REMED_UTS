@@ -2,10 +2,223 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Library System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Perpustakaan GeoLocation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        .navbar { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        .book-card { transition: transform 0.2s; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .book-card:hover { transform: translateY(-5px); }
+        .role-switch { position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: white; padding: 10px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    </style>
 </head>
 <body>
-    <h1>Library System Backend is Ready</h1>
-    <p>Silakan gunakan Postman untuk mengakses API di port 3000.</p>
+
+    <nav class="navbar navbar-dark navbar-expand-lg shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#"><i class="fas fa-book-reader me-2"></i> E-Library (Remedial)</a>
+            <span class="navbar-text text-white" id="roleDisplay">Mode: <span class="badge bg-warning text-dark">User</span></span>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-primary"><i class="fas fa-list"></i> Koleksi Buku</h2>
+            <div id="adminButtons" class="d-none">
+                <button class="btn btn-info text-white me-2" onclick="openHistoryModal()">
+                    <i class="fas fa-history"></i> History & Lokasi
+                </button>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addBookModal">
+                    <i class="fas fa-plus"></i> Tambah Buku
+                </button>
+            </div>
+        </div>
+
+        <div id="loading" class="text-center my-5"><div class="spinner-border text-primary"></div></div>
+        <div class="row g-4" id="bookList"></div>
+    </div>
+
+    <div class="role-switch d-flex align-items-center gap-2">
+        <label class="fw-bold">Role:</label>
+        <select id="roleSelector" class="form-select form-select-sm" style="width: auto;">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+        </select>
+    </div>
+
+    <div class="modal fade" id="addBookModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white"><h5 class="modal-title">Tambah Buku</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="addBookForm">
+                        <div class="mb-3"><label>Judul</label><input type="text" class="form-control" id="title" required></div>
+                        <div class="mb-3"><label>Penulis</label><input type="text" class="form-control" id="author" required></div>
+                        <div class="mb-3"><label>Stok</label><input type="number" class="form-control" id="stock" required></div>
+                        <button type="submit" class="btn btn-primary w-100">Simpan</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="historyModal" tabindex="-1">
+        <div class="modal-dialog modal-xl"> <div class="modal-content">
+                <div class="modal-header bg-info text-white"><h5 class="modal-title">Riwayat Peminjaman & Lokasi</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Waktu</th>
+                                    <th>User ID</th>
+                                    <th>Buku</th>
+                                    <th>Koordinat (Lat, Long)</th> <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let currentRole = 'user';
+
+        document.getElementById('roleSelector').addEventListener('change', (e) => {
+            currentRole = e.target.value;
+            updateUIByRole();
+        });
+
+        function updateUIByRole() {
+            const badge = document.querySelector('#roleDisplay span');
+            const adminBtns = document.getElementById('adminButtons');
+            
+            if (currentRole === 'admin') {
+                badge.className = 'badge bg-danger'; badge.innerText = 'Admin';
+                adminBtns.classList.remove('d-none');
+            } else {
+                badge.className = 'badge bg-warning text-dark'; badge.innerText = 'User';
+                adminBtns.classList.add('d-none');
+            }
+            fetchBooks();
+        }
+
+        async function fetchBooks() {
+            try {
+                const res = await fetch(`${API_URL}/books`);
+                const books = await res.json();
+                const container = document.getElementById('bookList');
+                document.getElementById('loading').style.display = 'none';
+                container.innerHTML = '';
+
+                if(books.length === 0) { container.innerHTML = '<div class="text-center">Data kosong.</div>'; return; }
+
+                books.forEach(book => {
+                    let btn = currentRole === 'admin' 
+                        ? `<button onclick="deleteBook(${book.id})" class="btn btn-outline-danger btn-sm w-100 mt-2">Hapus</button>`
+                        : `<button onclick="borrowBook(${book.id})" ${book.stock <= 0 ? 'disabled' : ''} class="btn ${book.stock <= 0 ? 'btn-secondary' : 'btn-primary'} btn-sm w-100 mt-2">${book.stock <= 0 ? 'Habis' : 'Pinjam'}</button>`;
+                    
+                    container.innerHTML += `
+                        <div class="col-md-4"><div class="card book-card h-100 shadow-sm"><div class="card-body">
+                            <span class="badge bg-info float-end">Stok: ${book.stock}</span>
+                            <h5 class="card-title fw-bold">${book.title}</h5>
+                            <p class="text-muted small">${book.author}</p>
+                            ${btn}
+                        </div></div></div>`;
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        // FUNGSI HISTORY UPDATE
+        async function openHistoryModal() {
+            try {
+                const res = await fetch(`${API_URL}/borrow`, {
+                    headers: { 'x-user-role': 'admin' }
+                });
+                const logs = await res.json();
+                const tbody = document.getElementById('historyTableBody');
+                tbody.innerHTML = '';
+
+                logs.forEach(log => {
+                    const mapsLink = `https://www.google.com/maps?q=${log.latitude},${log.longitude}`;
+                    const date = new Date(log.borrowDate).toLocaleString();
+                    const bookTitle = log.Book ? log.Book.title : 'Buku Terhapus';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><small>${date}</small></td>
+                            <td><span class="badge bg-secondary">User ${log.userId}</span></td>
+                            <td class="fw-bold text-primary">${bookTitle}</td>
+                            <td class="text-muted small" style="font-family: monospace;">
+                                ${log.latitude}, <br> ${log.longitude}
+                            </td>
+                            <td>
+                                <a href="${mapsLink}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-map-marked-alt"></i> Cek Maps
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                new bootstrap.Modal(document.getElementById('historyModal')).show();
+            } catch (err) {
+                Swal.fire('Error', 'Gagal memuat history', 'error');
+            }
+        }
+
+        // Add Book
+        document.getElementById('addBookForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const stock = document.getElementById('stock').value;
+            await fetch(`${API_URL}/books`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-user-role': 'admin' },
+                body: JSON.stringify({ title, author, stock })
+            });
+            bootstrap.Modal.getInstance(document.getElementById('addBookModal')).hide();
+            fetchBooks();
+        });
+
+        // Delete Book
+        async function deleteBook(id) {
+            if(confirm('Hapus buku ini?')) {
+                await fetch(`${API_URL}/books/${id}`, { method: 'DELETE', headers: { 'x-user-role': 'admin' } });
+                fetchBooks();
+            }
+        }
+
+        // Borrow Book
+        function borrowBook(bookId) {
+            if (!navigator.geolocation) return Swal.fire('Error', 'GPS tidak aktif', 'error');
+            Swal.fire({ title: 'Mencari Lokasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const { latitude, longitude } = pos.coords;
+                const res = await fetch(`${API_URL}/borrow`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-user-role': 'user', 'x-user-id': '101' },
+                    body: JSON.stringify({ bookId, latitude, longitude })
+                });
+                if(res.ok) {
+                    Swal.fire('Sukses', 'Peminjaman & Lokasi tercatat!', 'success');
+                    fetchBooks();
+                } else Swal.fire('Gagal', 'Stok habis / Error', 'error');
+            });
+        }
+
+        fetchBooks();
+    </script>
 </body>
 </html>
